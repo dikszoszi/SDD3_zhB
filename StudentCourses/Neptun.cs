@@ -4,8 +4,8 @@ namespace StudentCourses
 {
     public class Neptun
     {
-        public System.Collections.Generic.IEnumerable<Student> Students { get; set; }
-        public Microsoft.EntityFrameworkCore.DbContext Context { get; set; }
+        public System.Collections.Generic.IEnumerable<Student> Students { get; private set; }
+        public Microsoft.EntityFrameworkCore.DbContext Context { get; private set; }
 
         public Neptun()
         {
@@ -27,27 +27,39 @@ namespace StudentCourses
         }
         public void CourseAverageWithShortName()
         {
-            this.Students.GroupBy(stud => stud.Course)
-                .Select(grp => new { Course = grp.Key, Average = grp.Average(stud => stud.Mark) })
-                .DisplayResult();
+            var q = from student in this.Students
+                    group student by student.Course into grp
+                    select new { Course = grp.Key, Average = grp.Average(stud => stud.Mark) };
+            q.DisplayResult();
         }
 
         public void CourseAverageWithLongtName()
         {
-            this.Context.Set<Tables.Course>().AsEnumerable()
-                .Join(this.Students, crs => crs.CourseShortName, stud => stud.Course, (course, student) => new { course, student })
-                .GroupBy(join => join.course.CourseLongName)
-                .Select(grp => new { Course = grp.Key, Average = grp.Average(join => join.student.Mark) })
-                .DisplayResult();
+            var q = from course in this.Context.Set<Tables.Course>().AsEnumerable()
+                    join student in this.Students on course.CourseShortName equals student.Course
+                    let compound = new { student, course }
+                    group compound by compound.course.CourseLongName into grp
+                    select new { Course = grp.Key, Average = grp.Average(compound => compound.student.Mark) };
+            q.DisplayResult();
         }
 
         public void NamesAndCourseLongNames()
         {
+            /*
             this.Context.Set<Tables.Course>().AsEnumerable()
                  .Join(this.Students, crs => crs.CourseShortName, stud => stud.Course, (course, student) => new { course, student })
                  .GroupBy(join => join.student.Name)
-                 .SelectMany(grp => grp, (group, jointype) => new { StudentName = group.Key, jointype.course.CourseLongName })
+                 .SelectMany(collectionSelector: grp => grp,
+                             resultSelector: (group, jointype) => new { StudentName = group.Key, jointype.course.CourseLongName })
                  .DisplayResult();
+            */
+            var q = from course in this.Context.Set<Tables.Course>().AsEnumerable()
+                    join student in this.Students on course.CourseShortName equals student.Course
+                    let compound = new { student, course }
+                    group compound by compound.student.Name into grp
+                    from compound in grp
+                    select new { StudentName = grp.Key, compound.course.CourseLongName };
+            q.DisplayResult();
         }
     }
 }

@@ -5,8 +5,11 @@ namespace StudentCourses
 {
     public static class LinqResultConsole
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "English only")]
         public static void DisplayResult<T>(this System.Collections.Generic.IEnumerable<T> result)
         {
+            if (result is null) throw new System.ArgumentNullException(nameof(result));
+
             if (typeof(T) != typeof(int) && typeof(T) != typeof(string))
             {
                 PropertyInfo[] propInfos = typeof(T).GetProperties();

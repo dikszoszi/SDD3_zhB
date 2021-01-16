@@ -18,20 +18,19 @@
         [ColoredProperty(System.ConsoleColor.Magenta)]
         public string Type { get; set; }
 
-        public static System.Collections.Generic.IList<Student> GetStudentsFromXml(System.Xml.Linq.XDocument document)
+        public static System.Collections.Generic.IEnumerable<Student> GetStudentsFromXml(System.Xml.Linq.XDocument document)
         {
-            System.Collections.Generic.List<Student> studentList = new System.Collections.Generic.List<Student>();
+            if (document is null) throw new System.ArgumentNullException(nameof(document));
             foreach (System.Xml.Linq.XElement item in document.Descendants("student"))
             {
-                studentList.Add(new Student
+                yield return new Student
                 {
                     Name = item.Element("name").Value,
                     Course = item.Element("course").Value,
-                    Mark = int.Parse(item.Element("mark").Value),
+                    Mark = int.Parse(item.Element("mark").Value, System.Globalization.NumberFormatInfo.InvariantInfo),
                     Type = item.Element("type").Value
-                });
+                };
             }
-            return studentList;
         }
 
         public override string ToString()
