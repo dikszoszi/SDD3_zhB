@@ -8,7 +8,7 @@ namespace StudentCourses
     {
         private static void Main()
         {
-            Neptun neptun = new Neptun(Student.GetStudentsFromXml(
+            Neptun neptun = new (Student.GetStudentsFromXml(
                 System.Xml.Linq.XDocument.Load(@"Resources\students.xml")),
                 new Tables.CourseDbContext());
             neptun.ListOSstudents();
